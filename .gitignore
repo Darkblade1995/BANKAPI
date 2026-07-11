@@ -1,0 +1,5 @@
+git rm --cached .env
+git rm -r --cached tmp/
+git add .gitignore
+git commit -m "chore: add .gitignore, remove secrets and binaries"
+git push
