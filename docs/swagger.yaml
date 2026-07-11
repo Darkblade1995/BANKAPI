@@ -1,0 +1,510 @@
+basePath: /v1
+host: localhost:8080
+info:
+  contact:
+    email: luisagamez050@gmail.com
+    name: Fernando Agamez
+  description: API bancaria con soporte multi-moneda, JWT y transferencias atómicas
+  termsOfService: http://swagger.io/terms/
+  title: BankAPI
+  version: "1.0"
+paths:
+  /accounts:
+    get:
+      description: Retorna todas las cuentas del usuario autenticado
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              accounts:
+                type: array
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Listar cuentas
+      tags:
+      - accounts
+    post:
+      consumes:
+      - application/json
+      description: Crea una nueva cuenta bancaria para el usuario autenticado
+      parameters:
+      - description: Moneda (COP, USD, EUR)
+        in: body
+        name: input
+        required: true
+        schema:
+          properties:
+            currency:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            properties:
+              account:
+                type: object
+              message:
+                type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Crear cuenta
+      tags:
+      - accounts
+  /accounts/{id}:
+    get:
+      description: Retorna el detalle de una cuenta específica
+      parameters:
+      - description: ID de la cuenta
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              account:
+                type: object
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Ver cuenta
+      tags:
+      - accounts
+  /accounts/{id}/deposit:
+    post:
+      consumes:
+      - application/json
+      description: Deposita dinero en una cuenta
+      parameters:
+      - description: ID de la cuenta
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Monto en centavos
+        in: body
+        name: input
+        required: true
+        schema:
+          properties:
+            amount:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              account:
+                type: object
+              message:
+                type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Depositar
+      tags:
+      - accounts
+  /accounts/{id}/transactions:
+    get:
+      description: Retorna el historial de transacciones de una cuenta con paginación
+      parameters:
+      - description: ID de la cuenta
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 'Página (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Resultados por página (default: 10)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              limit:
+                type: integer
+              page:
+                type: integer
+              total:
+                type: integer
+              totalPages:
+                type: integer
+              transactions:
+                type: array
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Historial de transacciones
+      tags:
+      - accounts
+  /accounts/{id}/withdraw:
+    post:
+      consumes:
+      - application/json
+      description: Retira dinero de una cuenta
+      parameters:
+      - description: ID de la cuenta
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Monto en centavos
+        in: body
+        name: input
+        required: true
+        schema:
+          properties:
+            amount:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              account:
+                type: object
+              message:
+                type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Retirar
+      tags:
+      - accounts
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Invalida el refresh token del usuario
+      parameters:
+      - description: Refresh token
+        in: body
+        name: input
+        required: true
+        schema:
+          properties:
+            refreshToken:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Logout
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Genera un nuevo access token usando el refresh token
+      parameters:
+      - description: Refresh token
+        in: body
+        name: input
+        required: true
+        schema:
+          properties:
+            refreshToken:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              accessToken:
+                type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Refresh token
+      tags:
+      - auth
+  /transfers:
+    post:
+      consumes:
+      - application/json
+      description: Transfiere dinero entre cuentas con conversión automática de moneda
+      parameters:
+      - description: Datos de transferencia
+        in: body
+        name: input
+        required: true
+        schema:
+          properties:
+            amount:
+              type: integer
+            fromAccountId:
+              type: integer
+            toAccountId:
+              type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              amount:
+                type: integer
+              convertedAmount:
+                type: integer
+              exchangeRate:
+                type: number
+              fromCurrency:
+                type: string
+              message:
+                type: string
+              toCurrency:
+                type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Transferir
+      tags:
+      - accounts
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      description: Autentica un usuario y devuelve tokens JWT
+      parameters:
+      - description: Credenciales
+        in: body
+        name: input
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+            password:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              accessToken:
+                type: string
+              message:
+                type: string
+              refreshToken:
+                type: string
+              user:
+                type: object
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Login
+      tags:
+      - auth
+  /users/register:
+    post:
+      consumes:
+      - application/json
+      description: Crea un nuevo usuario en el sistema
+      parameters:
+      - description: Datos del usuario
+        in: body
+        name: input
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+            password:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            properties:
+              message:
+                type: string
+              user:
+                type: object
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Registrar usuario
+      tags:
+      - auth
+securityDefinitions:
+  BearerAuth:
+    description: Escribe "Bearer" seguido de tu token JWT
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: bankapi_postgres
+    environment:
+      POSTGRES_USER: bankapi
+      POSTGRES_PASSWORD: bankapi123
+      POSTGRES_DB: bankapi
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: bankapi_redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
