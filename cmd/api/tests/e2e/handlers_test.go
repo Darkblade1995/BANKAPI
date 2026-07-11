@@ -344,6 +344,16 @@ func (app *e2eApp) getTransactions(c *gin.Context) {
 		return
 	}
 
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	if err != nil || limit < 1 || limit > 100 {
+		limit = 10
+	}
+
 	userId, _ := c.Get("userId")
 
 	account, err := app.db.Accounts.GetAccountById(id)
@@ -357,11 +367,11 @@ func (app *e2eApp) getTransactions(c *gin.Context) {
 		return
 	}
 
-	transactions, err := app.db.Accounts.GetTransactionsByAccount(id)
+	result, err := app.db.Accounts.GetTransactionsByAccount(id, page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch transactions"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"transactions": transactions})
+	c.JSON(http.StatusOK, result)
 }
